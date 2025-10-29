@@ -1,0 +1,11 @@
+- name: Prepare Infra-Machines Networks
+
+- name: Install CRI
+
+- name: Installing kubeadm, kubelet and kubectl
+
+- name: Init Kubernetes Master Node
+
+- name: Install Pod Network Add-on CNI
+
+- name: Join Worker Nodes to the Cluster

@@ -1,0 +1,17 @@
+- name: Simple Play name
+  hosts: 
+    - web
+  vars:
+    varable1: "value1"
+    varable2: "value2"
+  tasks:
+    - name: First task
+      become: true
+      ansible.builtin.copy:
+        src: file.txt
+        dest: /home/ubuntu/file.txt
+      
+    - name: Second task
+      ansible.builtin.shell: echo "Hello, World!"
+    - name: Third task
+      ansible.builtin.shell: echo "Variable 1 is {{ varable1 }}" >> /home/ubuntu/file.txt

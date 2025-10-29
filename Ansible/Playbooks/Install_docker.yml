@@ -1,0 +1,62 @@
+---
+- name: Install Docker, reboot, and deploy container
+  hosts: target_group
+  become: true
+
+  tasks:
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add Docker GPG key
+      ansible.builtin.shell:
+        cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+        state: present
+
+    - name: Install Docker CE
+      ansible.builtin.apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Add user to the Docker group
+      ansible.builtin.command:
+        cmd: "usermod -aG docker {{ ansible_user }}"
+
+    - name: Restart the machine
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+
+    - name: Wait for machine to come back online
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+
+    - name: Verify Docker installation
+      ansible.builtin.shell:
+        cmd: docker --version
+      register: docker_version_check
+      failed_when: docker_version_check.rc != 0
+      changed_when: false
+
+    - name: Run a test container
+      ansible.builtin.shell:
+        cmd: docker run --rm hello-world
+      register: docker_test_container
+      failed_when: docker_test_container.rc != 0
+      changed_when: false
+
+    - name: Print Docker verification results
+      debug:
+        msg:
+          - "Docker Version: {{ docker_version_check.stdout }}"
+          - "Test Container Output: {{ docker_test_container.stdout }}"
